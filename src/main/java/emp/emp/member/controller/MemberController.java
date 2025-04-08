@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import emp.emp.auth.custom.CustomUserDetails;
 import emp.emp.member.dto.request.InputFeatureReq;
+import emp.emp.member.dto.request.UpdateFeatureReq;
 import emp.emp.member.dto.response.InputFeatureRes;
 import emp.emp.member.entity.Member;
 import emp.emp.member.service.MemberService;
@@ -55,6 +57,17 @@ public class MemberController {
 		InputFeatureRes response = memberService.inputFeature(userDetails, request);
 
 		return Response.ok(response).toResponseEntity();
+	}
+
+	/**
+	 * 유저 정보 업데이트
+	 * @param request 새 유저 정보
+	 */
+	@PatchMapping("/auth/user/feature")
+	public ResponseEntity<Response<Void>> updateFeature(@RequestBody UpdateFeatureReq request) {
+		memberService.updateFeature(request);
+
+		return Response.ok().toResponseEntity();
 	}
 
 }

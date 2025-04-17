@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import emp.emp.auth.custom.CustomUserDetails;
+import emp.emp.auth.dto.LoginDto;
 import emp.emp.auth.exception.AuthErrorCode;
 import emp.emp.exception.BusinessException;
 import emp.emp.member.dto.request.InputFeatureReq;
@@ -36,22 +37,34 @@ public class MemberServiceImpl implements MemberService {
 	public InputFeatureRes inputFeature(CustomUserDetails userDetails, InputFeatureReq request) {
 		Member currentMember = securityUtil.getCurrentMember();
 
-		if (currentMember.getRole().equals(Role.ROLE_USER)) {
-			throw new BusinessException(AuthErrorCode.INVALID_ROLE);
-		}
+		validRoleSemi(currentMember);
 
 		inputUserInfo(currentMember, request);
 		currentMember.setRole(Role.ROLE_USER);
 
 		jwtTokenProvider.deleteRefreshToken(currentMember.getVerifyId());
 
-		String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
-		String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+		LoginDto updatedLoginDto = LoginDto.builder()
+			.verifyId(currentMember.getVerifyId())
+			.role(currentMember.getRole().name())
+			.email(currentMember.getEmail())
+			.build();
+
+		CustomUserDetails updatedUserDetails = CustomUserDetails.create(updatedLoginDto);
+
+		String accessToken = jwtTokenProvider.generateAccessToken(updatedUserDetails);
+		String refreshToken = jwtTokenProvider.generateRefreshToken(updatedUserDetails);
 
 		return InputFeatureRes.builder()
 			.accessToken(accessToken)
 			.refreshToken(refreshToken)
 			.build();
+	}
+
+	private void validRoleSemi(Member member) {
+		if (!member.getRole().equals(Role.ROLE_SEMI_USER)) {
+			throw new BusinessException(AuthErrorCode.INVALID_ROLE);
+		}
 	}
 
 	private void inputUserInfo(Member member, InputFeatureReq request) {

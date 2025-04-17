@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import emp.emp.auth.custom.CustomUserDetails;
@@ -30,6 +31,7 @@ import emp.emp.exception.BusinessException;
 import emp.emp.util.api_response.Response;
 import emp.emp.util.api_response.error_code.GeneralErrorCode;
 import emp.emp.util.jwt.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -161,7 +163,16 @@ public class AuthController {
 
 		redisTemplate.delete(tempCode);
 
-		Map<String, String> tokenData = objectMapper.readValue(tokenDataJson, Map.class);
+		Map<String, String> tokenData = objectMapper.readValue(
+			tokenDataJson, new TypeReference<Map<String, String>>() {
+			});
+
+		String accessToken = tokenData.get("accessToken");
+		if (accessToken != null) {
+			Claims claims = jwtTokenProvider.getClaims(accessToken);
+			String role = (String) claims.get("role");
+			tokenData.put("role", role);
+		}
 
 		return Response.ok(tokenData).toResponseEntity();
 	}

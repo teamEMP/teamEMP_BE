@@ -3,13 +3,16 @@ package emp.emp.member.entity;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import emp.emp.calendar.entity.CalendarEvent;
 import emp.emp.family.entity.Family;
 import emp.emp.health.entity.Health;
 import emp.emp.health.entity.HealthComment;
 import emp.emp.member.enums.Role;
 import emp.emp.util.BaseEntity;
+import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -108,5 +111,28 @@ public class Member extends BaseEntity {
 	public int getAge() {
 		return Period.between(this.birthDay, LocalDate.now()).getYears();
 	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public void setBirthDay(LocalDate birthDay) {
+		this.birthDay = birthDay;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	@OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+	private List<CalendarEvent> calendarEvent = new ArrayList<>();
 
 }
